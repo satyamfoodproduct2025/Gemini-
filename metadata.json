@@ -1,0 +1,7 @@
+{
+  "name": "Library Work Automate",
+  "description": "A comprehensive library management system with dashboard, seat allocation, payment tracking, and attendance monitoring.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
