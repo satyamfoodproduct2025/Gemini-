@@ -18,6 +18,7 @@ interface AppContextProps {
   payments: PaymentRecord[];
   setPayments: React.Dispatch<React.SetStateAction<PaymentRecord[]>>;
   attendance: AttendanceRecord[];
+  setAttendance: React.Dispatch<React.SetStateAction<AttendanceRecord[]>>;
   location: LibraryLocation;
   setLocation: React.Dispatch<React.SetStateAction<LibraryLocation>>;
   currentUserMobile: string | null;
@@ -31,6 +32,7 @@ interface AppContextProps {
   generateRandomStudents: (count: number) => void;
   updateWowData: (mobile: string, reRender?: boolean) => void;
   getStudent: (mobile: string) => Student | undefined;
+  markStudentAttendance: (mobile: string) => void;
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
@@ -144,6 +146,48 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   }, [bookings, students]);
 
+  // Handle Attendance Mark
+  const markStudentAttendance = (mobile: string) => {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase().replace(' ', ''); // e.g. 10:30am
+
+    setAttendance(prev => {
+        const newData = [...prev];
+        let recordIndex = newData.findIndex(r => r.mobile === mobile && r.date === dateStr);
+
+        let type = '';
+
+        if (recordIndex === -1) {
+            // No record for today, create new (IN)
+            newData.unshift({ 
+                mobile, 
+                date: dateStr, 
+                times: [{ in: timeStr, out: '' }] 
+            });
+            type = 'IN';
+        } else {
+            const record = { ...newData[recordIndex] };
+            const lastTime = { ...record.times[record.times.length - 1] };
+
+            if (lastTime && !lastTime.out) {
+                // Last entry has IN but no OUT -> Mark OUT
+                lastTime.out = timeStr;
+                record.times[record.times.length - 1] = lastTime;
+                type = 'OUT';
+            } else {
+                // Last entry completed or no times -> Mark IN
+                record.times = [...record.times, { in: timeStr, out: '' }];
+                type = 'IN';
+            }
+            newData[recordIndex] = record;
+        }
+        
+        alert(`Attendance Marked Successfully!\nType: ${type}\nTime: ${timeStr}`);
+        return newData;
+    });
+  };
+
   // Initial Data Load
   useEffect(() => {
     const today = new Date();
@@ -193,7 +237,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       bookings, setBookings,
       wowRecords, setWowRecords,
       payments, setPayments,
-      attendance,
+      attendance, setAttendance,
       location, setLocation,
       currentUserMobile, setCurrentUserMobile,
       view, setView,
@@ -201,7 +245,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       totalSeats, setTotalSeats,
       generateRandomStudents,
       updateWowData,
-      getStudent
+      getStudent,
+      markStudentAttendance
     }}>
       {children}
     </AppContext.Provider>

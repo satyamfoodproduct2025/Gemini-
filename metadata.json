@@ -1,7 +1,8 @@
 {
-  "name": "Library Work Automate",
+  "name": "Avinashff99 ",
   "description": "A comprehensive library management system with dashboard, seat allocation, payment tracking, and attendance monitoring.",
   "requestFramePermissions": [
-    "geolocation"
+    "geolocation",
+    "camera"
   ]
 }
